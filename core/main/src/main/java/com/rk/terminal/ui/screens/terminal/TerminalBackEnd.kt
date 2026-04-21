@@ -145,7 +145,11 @@ class TerminalBackEnd(val terminal: TerminalView,val activity: MainActivity) : T
     }
     
     override fun shouldEnforceCharBasedInput(): Boolean {
-        return true
+        return Settings.input_mode != 1 // TYPE_NULL mode uses TYPE_NULL inputType
+    }
+
+    override fun getInputMode(): Int {
+        return Settings.input_mode
     }
     
     override fun shouldUseCtrlSpaceWorkaround(): Boolean {
@@ -159,6 +163,9 @@ class TerminalBackEnd(val terminal: TerminalView,val activity: MainActivity) : T
     override fun copyModeChanged(copyMode: Boolean) {}
     
     override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean {
+        if (KeyShortcutHandler.handle(keyCode, e, activity)) {
+            return true
+        }
         if (keyCode == KeyEvent.KEYCODE_ENTER && !session.isRunning) {
             activity.sessionBinder?.terminateSession(activity.sessionBinder!!.getService().currentSession.value.first)
             if (activity.sessionBinder!!.getService().sessionList.isEmpty()){
