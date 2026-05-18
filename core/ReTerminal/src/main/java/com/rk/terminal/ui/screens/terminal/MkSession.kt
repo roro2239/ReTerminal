@@ -1,5 +1,6 @@
 package com.rk.terminal.ui.screens.terminal
 
+import android.content.Context
 import com.rk.libcommons.alpineHomeDir
 import com.rk.libcommons.child
 import com.rk.libcommons.createFileIfNot
@@ -8,10 +9,9 @@ import com.rk.libcommons.localDir
 import com.rk.libcommons.localLibDir
 import com.rk.libcommons.pendingCommand
 import com.rk.settings.Settings
-import com.rk.terminal.App
 import com.rk.terminal.App.Companion.getTempDir
 import com.rk.terminal.BuildConfig
-import com.rk.terminal.ui.activities.terminal.MainActivity
+import com.rk.terminal.api.ReTerminal
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
@@ -19,9 +19,10 @@ import java.io.File
 
 object MkSession {
     fun createSession(
-        activity: MainActivity, sessionClient: TerminalSessionClient, session_id: String
+        context: Context, sessionClient: TerminalSessionClient, session_id: String
     ): TerminalSession {
-        with(activity) {
+        ReTerminal.requireRuntimeReady()
+        with(context) {
             val envVariables = mapOf(
                 "ANDROID_ART_ROOT" to System.getenv("ANDROID_ART_ROOT"),
                 "ANDROID_DATA" to System.getenv("ANDROID_DATA"),
@@ -119,7 +120,7 @@ object MkSession {
 
     }
 
-    private fun MainActivity.writeAssetScript(assetName: String, target: File) {
+    private fun Context.writeAssetScript(assetName: String, target: File) {
         target.createFileIfNot()
         target.writeText(assets.open(assetName).bufferedReader().use { it.readText() }.replace("\r\n", "\n"))
         target.setExecutable(true, false)

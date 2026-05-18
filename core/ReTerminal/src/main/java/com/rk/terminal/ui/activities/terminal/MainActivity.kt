@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.rk.terminal.api.ReTerminal
 import com.rk.terminal.service.SessionService
 import com.rk.terminal.ui.navHosts.MainActivityNavHost
 import com.rk.terminal.ui.routes.MainActivityRoutes
@@ -134,6 +135,7 @@ class MainActivity : ComponentActivity() {
     var isKeyboardVisible = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ReTerminal.initIfPossible(this)
         enableEdgeToEdge()
         requestPermission()
 

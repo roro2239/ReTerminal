@@ -4,8 +4,7 @@ import android.app.Application
 import android.os.Build
 import android.os.StrictMode
 import com.github.anrwatchdog.ANRWatchDog
-import com.rk.libcommons.application
-import com.rk.resources.Res
+import com.rk.terminal.api.ReTerminal
 import com.rk.update.UpdateManager
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +19,7 @@ class App : Application() {
     @OptIn(DelicateCoroutinesApi::class)
     companion object {
         fun getTempDir(): File {
-            val tmp = File(application!!.filesDir.parentFile, "tmp")
+            val tmp = File(ReTerminal.requireApplication().filesDir.parentFile, "tmp")
             if (!tmp.exists()) {
                 tmp.mkdir()
             }
@@ -31,8 +30,7 @@ class App : Application() {
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
-        application = this
-        Res.application = this
+        ReTerminal.init(this)
 
         GlobalScope.launch(Dispatchers.IO) {
             getTempDir().apply {

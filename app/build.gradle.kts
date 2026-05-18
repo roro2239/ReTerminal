@@ -5,7 +5,7 @@ plugins {
 
 
 android {
-    namespace = "com.rk.application"
+    namespace = "com.roro.terminal"
     compileSdk = 36
 
     dependenciesInfo {
@@ -26,7 +26,7 @@ android {
 
     
     defaultConfig {
-        applicationId = "com.rk.terminal"
+        applicationId = "com.roro.terminal"
         minSdk = 26
         targetSdk = 36
 
@@ -36,7 +36,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        manifestPlaceholders["mainNamespace"] = "com.rk.terminal"
     }
 
     compileOptions {

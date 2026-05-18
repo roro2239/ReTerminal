@@ -1,6 +1,7 @@
 package com.rk.terminal.service
 
 import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Binder
@@ -12,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import com.rk.resources.drawables
 import com.rk.resources.strings
+import com.rk.terminal.api.ReTerminal
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.screens.settings.Settings
 import com.rk.terminal.ui.screens.terminal.MkSession
@@ -35,8 +37,8 @@ class SessionService : Service() {
             sessionList.clear()
             updateNotification()
         }
-        fun createSession(id: String, client: TerminalSessionClient, activity: MainActivity): TerminalSession {
-            return MkSession.createSession(activity, client, id).also {
+        fun createSession(id: String, client: TerminalSessionClient, context: Context): TerminalSession {
+            return MkSession.createSession(context, client, id).also {
                 sessions[id] = it
                 sessionList[id] = true
                 updateNotification()
@@ -82,6 +84,7 @@ class SessionService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        ReTerminal.initIfPossible(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()
         }

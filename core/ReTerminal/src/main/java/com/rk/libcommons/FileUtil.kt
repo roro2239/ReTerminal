@@ -1,14 +1,11 @@
 package com.rk.libcommons
 
 import android.content.Context
+import com.rk.terminal.api.ReTerminal
 import java.io.File
 
 private fun getFilesDir(): File{
-    return if (application == null){
-        File("/data/data/com.rk.terminal/files")
-    }else{
-        application!!.filesDir
-    }
+    return ReTerminal.requireApplication().filesDir
 }
 
 fun localDir(): File {

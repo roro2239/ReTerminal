@@ -2,17 +2,19 @@ package com.rk.terminal.ui.screens.terminal
 
 import androidx.compose.runtime.mutableStateOf
 import com.rk.libcommons.alpineDir
-import com.rk.libcommons.application
 import com.rk.libcommons.child
+import com.rk.terminal.api.ReTerminal
+import java.io.File
 
 object Rootfs {
-    val reTerminal = application!!.filesDir.also {
-        if (!it.exists()) {
-            it.mkdirs()
+    val reTerminal: File
+        get() = ReTerminal.requireApplication().filesDir.also {
+            if (!it.exists()) {
+                it.mkdirs()
+            }
         }
-    }
 
-    var isDownloaded = mutableStateOf(isFilesDownloaded())
+    var isDownloaded = mutableStateOf(false)
 
     fun isFilesDownloaded(): Boolean {
         return reTerminal.child("alpine.tar.gz").exists() &&
@@ -23,6 +25,10 @@ object Rootfs {
     fun markDownloaded(sha256: String) {
         reTerminal.child("alpine.sha256").writeText(sha256)
         isDownloaded.value = true
+    }
+
+    fun refreshState() {
+        isDownloaded.value = isFilesDownloaded()
     }
 
     fun resetInstalledRootfs() {
