@@ -35,7 +35,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "ReTerminal"
 include(":app")
-include(":core:main")
+include(":core:ReTerminal")
 
 include(":core:components")
 include(":core:resources")

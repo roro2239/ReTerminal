@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
@@ -15,41 +13,7 @@ android {
         includeInApk = false
         includeInBundle = false
     }
-    
-    signingConfigs {
-        create("release") {
-            val isGITHUB_ACTION = System.getenv("GITHUB_ACTIONS") == "true"
-            
-            val propertiesFilePath = if (isGITHUB_ACTION) {
-                "/tmp/signing.properties"
-            } else {
-                "/home/rohit/Android/xed-signing/signing.properties"
-            }
-            
-            val propertiesFile = File(propertiesFilePath)
-            if (propertiesFile.exists()) {
-                val properties = Properties()
-                properties.load(propertiesFile.inputStream())
-                keyAlias = properties["keyAlias"] as String?
-                keyPassword = properties["keyPassword"] as String?
-                storeFile = if (isGITHUB_ACTION) {
-                    File("/tmp/xed.keystore")
-                } else {
-                    (properties["storeFile"] as String?)?.let { File(it) }
-                }
-                
-                storePassword = properties["storePassword"] as String?
-            }
-        }
-        getByName("debug") {
-            storeFile = file(layout.buildDirectory.dir("../testkey.keystore"))
-            storePassword = "testkey"
-            keyAlias = "testkey"
-            keyPassword = "testkey"
-        }
-    }
-    
-    
+
     buildTypes {
         release{
             isMinifyEnabled = false
@@ -58,13 +22,6 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
-            resValue("string","app_name","ReTerminal")
-        }
-        debug{
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-DEBUG"
-            resValue("string","app_name","ReTerminal-Debug")
         }
     }
 
@@ -80,32 +37,17 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        manifestPlaceholders["mainNamespace"] = "com.rk.terminal"
     }
 
-    flavorDimensions += "store"
-
-    productFlavors {
-        create("Fdroid") {
-            dimension = "store"
-            targetSdk = 36
-        }
-
-        create("PlayStore") {
-            dimension = "store"
-            targetSdk = 36
-        }
-    }
-    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-       // isCoreLibraryDesugaringEnabled = true
     }
     
     buildFeatures {
         viewBinding = true
         compose = true
-        resValues = true
     }
     
     composeOptions {
@@ -119,9 +61,5 @@ android {
 }
 
 dependencies {
-    //coreLibraryDesugaring(libs.desugar.jdk.libs)
-    implementation(project(":core:main"))
-
-
-
+    implementation(project(":core:ReTerminal"))
 }

@@ -3,7 +3,7 @@
     <string name="settings">设置</string>
     <string name="use_shizuku">自动登录 Shizuku</string>
     <string name="use_shizuku_desc">自动执行 rish 命令</string>
-    <string name="android_desc">ReTerminal Android Shell</string>
+    <string name="alpine_desc">Alpine Linux</string>
     <string name="customizations">自定义</string>
     <string name="seccomp">SECCOMP</string>
     <string name="seccomp_desc">修复"操作不被允许"错误</string>
