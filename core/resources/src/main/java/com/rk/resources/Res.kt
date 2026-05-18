@@ -1,0 +1,21 @@
+package com.rk.resources
+
+import android.app.Application
+import android.graphics.drawable.Drawable
+import androidx.core.content.ContextCompat
+
+typealias drawables = R.drawable
+typealias strings = R.string
+
+object Res{
+    @JvmField
+    var application:Application? = null
+}
+
+fun Int.getString():String{
+    return ContextCompat.getString(Res.application!!, this)
+}
+
+fun Int.getDrawable():Drawable?{
+    return ContextCompat.getDrawable(Res.application!!,this)
+}

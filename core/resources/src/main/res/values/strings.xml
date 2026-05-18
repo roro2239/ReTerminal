@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings">设置</string>
+    <string name="use_shizuku">自动登录 Shizuku</string>
+    <string name="use_shizuku_desc">自动执行 rish 命令</string>
+    <string name="android_desc">ReTerminal Android Shell</string>
+    <string name="customizations">自定义</string>
+    <string name="seccomp">SECCOMP</string>
+    <string name="seccomp_desc">修复"操作不被允许"错误</string>
+    <string name="text_size">文字大小</string>
+    <string name="vibrate">振动</string>
+    <string name="vibrate_desc">虚拟键盘振动反馈</string>
+    <string name="attention">注意</string>
+    <string name="virtual_keys">虚拟按键</string>
+    <string name="virtual_keys_desc">在终端下方显示虚拟按键</string>
+    <string name="hide_soft_keyboard">隐藏软键盘</string>
+    <string name="hide_soft_keyboard_desc">连接硬件键盘时隐藏虚拟键盘</string>
+    <string name="session">会话</string>
+    <string name="apply">应用</string>
+    <string name="cancel">取消</string>
+    <string name="installing">安装中</string>
+    <string name="downloading">下载中.. %1$d%%</string>
+    <string name="network_error">网络错误</string>
+    <string name="setup_failed">安装失败：%1$s</string>
+    <string name="keyboard_shortcuts">键盘快捷键</string>
+    <string name="keyboard_shortcuts_desc">启用键盘快捷键</string>
+    <string name="shortcut_paste">粘贴</string>
+    <string name="shortcut_paste_desc">粘贴剪贴板内容</string>
+    <string name="shortcut_new_session">新建会话</string>
+    <string name="shortcut_new_session_desc">创建新的终端会话</string>
+    <string name="shortcut_close_session">关闭会话</string>
+    <string name="shortcut_close_session_desc">关闭当前终端会话</string>
+    <string name="shortcut_switch_prev">上一个会话</string>
+    <string name="shortcut_switch_prev_desc">切换到上一个会话</string>
+    <string name="shortcut_switch_next">下一个会话</string>
+    <string name="shortcut_switch_next_desc">切换到下一个会话</string>
+    <string name="shortcut_capture_title">请按下快捷键组合</string>
+    <string name="shortcut_capture_hint">等待输入…</string>
+    <string name="shortcut_clear">清除</string>
+    <string name="input_mode">输入模式</string>
+    <string name="input_mode_desc">配置终端与输入法的通信方式</string>
+    <string name="input_mode_default">默认（推荐）</string>
+    <string name="input_mode_default_desc">兼容所有输入法，包括中日韩文输入</string>
+    <string name="input_mode_type_null">严格终端模式</string>
+    <string name="input_mode_type_null_desc">语义最正确，但可能导致部分输入法异常</string>
+</resources>
