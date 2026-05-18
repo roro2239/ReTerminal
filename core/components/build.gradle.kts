@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "org.robok.engine.core.components"
     compileSdk = 36
-    
+
     defaultConfig {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -16,12 +16,11 @@ android {
         viewBinding = true
         compose = true
     }
-   
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
 }
 
 dependencies {

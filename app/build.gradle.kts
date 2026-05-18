@@ -8,7 +8,6 @@ android {
     namespace = "com.rk.application"
     compileSdk = 36
 
-
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
@@ -44,15 +43,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    
+
     buildFeatures {
         viewBinding = true
         compose = true
     }
-    
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+
     packaging {
         jniLibs {
             useLegacyPackaging = true
