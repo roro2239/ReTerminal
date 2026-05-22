@@ -64,7 +64,6 @@ import com.rk.resources.strings
 import com.rk.libcommons.child
 import com.rk.libcommons.dpToPx
 import com.rk.libcommons.localDir
-import com.rk.libcommons.pendingCommand
 import com.rk.settings.Settings
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.routes.MainActivityRoutes
@@ -77,12 +76,7 @@ import com.termux.view.TerminalView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.FileInputStream
-import java.lang.ref.WeakReference
 import java.util.Properties
-
-var terminalView = WeakReference<TerminalView?>(null)
-var virtualKeysView = WeakReference<VirtualKeysView?>(null)
-
 
 var darkText = mutableStateOf(false)
 
@@ -113,6 +107,7 @@ fun TerminalScreen(
     mainActivityActivity: MainActivity,
     navController: NavController
 ) {
+    val sessionController = mainActivityActivity.sessionController ?: return
     val isDarkMode = isSystemInDarkTheme()
     val scope = rememberCoroutineScope()
 
@@ -120,9 +115,9 @@ fun TerminalScreen(
     LaunchedEffect(Unit){
         darkText.value = !isDarkMode
         scope.launch(Dispatchers.Main){
-            virtualKeysView.get()?.apply {
+            TerminalUiRegistry.virtualKeysView.get()?.apply {
                 virtualKeysViewClient =
-                    terminalView.get()?.mTermSession?.let {
+                    TerminalUiRegistry.terminalView.get()?.mTermSession?.let {
                         VirtualKeysListener(
                             it
                         )
@@ -140,7 +135,7 @@ fun TerminalScreen(
                 )
             }
 
-            terminalView.get()?.apply {
+            TerminalUiRegistry.terminalView.get()?.apply {
                 onScreenUpdated()
 
 
@@ -185,12 +180,12 @@ fun TerminalScreen(
                 return newString
             }
 
-            val sessionId = generateUniqueString(mainActivityActivity.sessionBinder!!.getService().sessionList.keys.toList())
+            val sessionId = generateUniqueString(sessionController.sessionList.keys.toList())
 
-            terminalView.get()
+            TerminalUiRegistry.terminalView.get()
                 ?.let {
                     val client = TerminalBackEnd(it, mainActivityActivity)
-                    mainActivityActivity.sessionBinder!!.createSession(
+                    sessionController.createSession(
                         sessionId,
                         client,
                         mainActivityActivity
@@ -247,11 +242,11 @@ fun TerminalScreen(
 
                         }
 
-                        mainActivityActivity.sessionBinder?.getService()?.sessionList?.keys?.toList()?.let {
+                        sessionController.sessionList.keys.toList().let {
                             LazyColumn {
                                 items(it) { session_id ->
                                     SelectableCard(
-                                        selected = session_id == mainActivityActivity.sessionBinder?.getService()?.currentSession?.value,
+                                        selected = session_id == sessionController.currentSession.value,
                                         onSelect = {
                                             changeSession(
                                                 mainActivityActivity,
@@ -271,13 +266,13 @@ fun TerminalScreen(
                                                 style = MaterialTheme.typography.bodyLarge
                                             )
 
-                                            if (session_id != mainActivityActivity.sessionBinder?.getService()?.currentSession?.value) {
+                                            if (session_id != sessionController.currentSession.value) {
                                                 Spacer(modifier = Modifier.weight(1f))
 
                                                 IconButton(
                                                     onClick = {
                                                         println(session_id)
-                                                        mainActivityActivity.sessionBinder?.terminateSession(
+                                                        sessionController.terminateSession(
                                                             session_id
                                                         )
                                                     },
@@ -316,7 +311,7 @@ fun TerminalScreen(
                                         Text(text = "ReTerminal", color = color)
                                         Text(
                                             style = MaterialTheme.typography.bodySmall,
-                                            text = mainActivityActivity.sessionBinder?.getService()?.currentSession?.value.orEmpty(),
+                                            text = sessionController.currentSession.value,
                                             color = color
                                         )
                                     }
@@ -341,7 +336,7 @@ fun TerminalScreen(
                                 AndroidView(
                                     factory = { context ->
                                         TerminalView(context, null).apply {
-                                            terminalView = WeakReference(this)
+                                            TerminalUiRegistry.terminalView = java.lang.ref.WeakReference(this)
                                             setTextSize(
                                                 dpToPx(
                                                     Settings.terminal_font_size.toFloat(),
@@ -350,26 +345,13 @@ fun TerminalScreen(
                                             )
                                             val client = TerminalBackEnd(this, mainActivityActivity)
 
-                                            val session = if (pendingCommand != null) {
-                                                mainActivityActivity.sessionBinder!!.getService().currentSession.value = pendingCommand!!.id
-                                                mainActivityActivity.sessionBinder!!.getSession(
-                                                    pendingCommand!!.id
+                                            val sessionId = sessionController.currentSession.value
+                                            val session = sessionController.getSession(sessionId)
+                                                ?: sessionController.createSession(
+                                                    sessionId,
+                                                    client,
+                                                    mainActivityActivity
                                                 )
-                                                    ?: mainActivityActivity.sessionBinder!!.createSession(
-                                                        pendingCommand!!.id,
-                                                        client,
-                                                        mainActivityActivity
-                                                    )
-                                            } else {
-                                                mainActivityActivity.sessionBinder!!.getSession(
-                                                    mainActivityActivity.sessionBinder!!.getService().currentSession.value
-                                                )
-                                                    ?: mainActivityActivity.sessionBinder!!.createSession(
-                                                        mainActivityActivity.sessionBinder!!.getService().currentSession.value,
-                                                        client,
-                                                        mainActivityActivity
-                                                    )
-                                            }
 
                                             session.updateTerminalSessionClient(client)
                                             attachSession(session)
@@ -412,13 +394,13 @@ fun TerminalScreen(
 
                                 if (showVirtualKeys.value){
                                     val onSurfaceColor = MaterialTheme.colorScheme.onSurface.toArgb()
-                                    terminalView.get()?.requestFocus()
+                                    TerminalUiRegistry.terminalView.get()?.requestFocus()
                                     AndroidView(
                                         factory = { context ->
                                             VirtualKeysView(context, null).apply {
-                                                virtualKeysView = WeakReference(this)
+                                                TerminalUiRegistry.virtualKeysView = java.lang.ref.WeakReference(this)
                                                 virtualKeysViewClient =
-                                                    terminalView.get()?.mTermSession?.let {
+                                                    TerminalUiRegistry.terminalView.get()?.mTermSession?.let {
                                                         VirtualKeysListener(it)
                                                     }
 
@@ -438,7 +420,7 @@ fun TerminalScreen(
                                             .height(75.dp)
                                     )
                                 }else{
-                                    virtualKeysView = WeakReference(null)
+                                    TerminalUiRegistry.virtualKeysView = java.lang.ref.WeakReference(null)
                                 }
 
                             }
@@ -506,11 +488,12 @@ fun SelectableCard(
 
 
 fun changeSession(mainActivityActivity: MainActivity, session_id: String) {
-    terminalView.get()?.apply {
+    val sessionController = mainActivityActivity.sessionController ?: return
+    TerminalUiRegistry.terminalView.get()?.apply {
         val client = TerminalBackEnd(this, mainActivityActivity)
         val session =
-            mainActivityActivity.sessionBinder!!.getSession(session_id)
-                ?: mainActivityActivity.sessionBinder!!.createSession(
+            sessionController.getSession(session_id)
+                ?: sessionController.createSession(
                     session_id,
                     client,
                     mainActivityActivity
@@ -534,13 +517,13 @@ fun changeSession(mainActivityActivity: MainActivity, session_id: String) {
                 set(256, typedValue.data)
             }
         }
-        virtualKeysView.get()?.apply {
+        TerminalUiRegistry.virtualKeysView.get()?.apply {
             virtualKeysViewClient =
-                terminalView.get()?.mTermSession?.let { VirtualKeysListener(it) }
+                TerminalUiRegistry.terminalView.get()?.mTermSession?.let { VirtualKeysListener(it) }
         }
 
     }
-    mainActivityActivity.sessionBinder!!.getService().currentSession.value = session_id
+    sessionController.currentSession.value = session_id
 
 }
 

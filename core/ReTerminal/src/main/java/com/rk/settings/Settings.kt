@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
-import com.rk.libcommons.application
+import com.rk.terminal.api.ReTerminal
 import com.rk.terminal.ui.screens.settings.InputMode
 
 object Settings {
@@ -75,7 +75,8 @@ object Settings {
 }
 
 object Preference {
-    private var sharedPreferences: SharedPreferences = application!!.getSharedPreferences("Settings", Context.MODE_PRIVATE)
+    private val sharedPreferences: SharedPreferences
+        get() = ReTerminal.requireApplication().getSharedPreferences("Settings", Context.MODE_PRIVATE)
 
     //store the result into memory for faster access
     private val stringCache = hashMapOf<String, String?>()

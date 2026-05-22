@@ -1,14 +1,14 @@
 package com.roro.terminal
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
-import androidx.activity.ComponentActivity
 import com.rk.terminal.api.ReTerminal
 
-class MainActivity : ComponentActivity() {
+class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -1,7 +1,5 @@
 package com.rk.libcommons
 
-var pendingCommand: TerminalCommand? = null
-
 data class TerminalCommand(
     val shell: String,
     val args: Array<String> = arrayOf(),

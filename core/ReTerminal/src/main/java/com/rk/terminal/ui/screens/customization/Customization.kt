@@ -21,7 +21,7 @@ import com.rk.libcommons.dpToPx
 import com.rk.settings.Settings
 import com.rk.terminal.ui.components.SettingsToggle
 import com.rk.terminal.ui.screens.terminal.showVirtualKeys
-import com.rk.terminal.ui.screens.terminal.terminalView
+import com.rk.terminal.ui.screens.terminal.TerminalUiRegistry
 import com.rk.terminal.ui.screens.terminal.ShortcutAction
 import com.rk.terminal.ui.screens.terminal.ShortcutCaptureDialog
 
@@ -46,7 +46,7 @@ fun Customization(modifier: Modifier = Modifier) {
                     onValueChange = {
                         sliderPosition = it
                         Settings.terminal_font_size = it.toInt()
-                        terminalView.get()?.setTextSize(dpToPx(it.toFloat(), context))
+                        TerminalUiRegistry.terminalView.get()?.setTextSize(dpToPx(it.toFloat(), context))
                     },
                     steps = (max_text_size - min_text_size).toInt() - 1,
                     valueRange = min_text_size..max_text_size,

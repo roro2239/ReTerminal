@@ -31,26 +31,33 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.rk.libcommons.TerminalCommand
 import com.rk.terminal.api.ReTerminal
 import com.rk.terminal.service.SessionService
+import com.rk.terminal.session.TerminalSessionController
 import com.rk.terminal.ui.navHosts.MainActivityNavHost
 import com.rk.terminal.ui.routes.MainActivityRoutes
 import com.rk.terminal.ui.screens.terminal.TerminalScreen
-import com.rk.terminal.ui.screens.terminal.terminalView
+import com.rk.terminal.ui.screens.terminal.TerminalUiRegistry
 import com.rk.terminal.ui.theme.KarbonTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity : ComponentActivity() {
-    var sessionBinder:SessionService.SessionBinder? = null
+    var sessionController: TerminalSessionController? = null
     var isBound = false
+    private var launchCommand: TerminalCommand? = null
 
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as SessionService.SessionBinder
-            sessionBinder = binder
+            sessionController = binder.sessionController
+            launchCommand?.let {
+                binder.sessionController.enqueueCommand(it)
+                launchCommand = null
+            }
             isBound = true
 
             lifecycleScope.launch(Dispatchers.Main){
@@ -71,7 +78,7 @@ class MainActivity : ComponentActivity() {
                                     focusManager.clearFocus(force = true)
 
                                     // 2️⃣ Clear Android View focus
-                                    terminalView.get()?.clearFocus()
+                                    TerminalUiRegistry.terminalView.get()?.clearFocus()
 
                                     // 3️⃣ Hide IME explicitly
                                     keyboardController?.hide()
@@ -89,7 +96,7 @@ class MainActivity : ComponentActivity() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             isBound = false
-            sessionBinder = null
+            sessionController = null
         }
     }
 
@@ -136,6 +143,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ReTerminal.initIfPossible(this)
+        launchCommand = ReTerminal.readCommand(intent)
         enableEdgeToEdge()
         requestPermission()
 
@@ -143,6 +151,16 @@ class MainActivity : ComponentActivity() {
             moveTaskToBack(true)
         }
 
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        ReTerminal.readCommand(intent)?.let { command ->
+            sessionController?.enqueueCommand(command) ?: run {
+                launchCommand = command
+            }
+        }
     }
 
     var wasKeyboardOpen = false
@@ -167,7 +185,7 @@ class MainActivity : ComponentActivity() {
 
 
         if (wasKeyboardOpen && !isKeyboardVisible){
-            terminalView.get()?.let {
+            TerminalUiRegistry.terminalView.get()?.let {
                 val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.showSoftInput(it, InputMethodManager.SHOW_IMPLICIT)
             }

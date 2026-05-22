@@ -1,4 +1,4 @@
-package com.rk.terminal.ui.screens.terminal
+package com.rk.terminal.runtime
 
 import androidx.compose.runtime.mutableStateOf
 import com.rk.libcommons.alpineDir
@@ -6,7 +6,7 @@ import com.rk.libcommons.child
 import com.rk.terminal.api.ReTerminal
 import java.io.File
 
-object Rootfs {
+object RuntimeEnvironment {
     val reTerminal: File
         get() = ReTerminal.requireApplication().filesDir.also {
             if (!it.exists()) {
@@ -14,7 +14,7 @@ object Rootfs {
             }
         }
 
-    var isDownloaded = mutableStateOf(false)
+    val isDownloaded = mutableStateOf(false)
 
     fun isFilesDownloaded(): Boolean {
         return reTerminal.child("alpine.tar.gz").exists() &&

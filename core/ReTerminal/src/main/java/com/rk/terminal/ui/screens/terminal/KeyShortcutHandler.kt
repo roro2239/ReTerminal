@@ -40,33 +40,31 @@ object KeyShortcutHandler {
     private fun handlePaste(): Boolean {
         val clip = ClipboardUtils.getText()?.toString() ?: return true
         if (clip.trim().isNotEmpty()) {
-            terminalView.get()?.mEmulator?.paste(clip)
+            TerminalUiRegistry.terminalView.get()?.mEmulator?.paste(clip)
         }
         return true
     }
 
     private fun handleNewSession(activity: MainActivity): Boolean {
-        val binder = activity.sessionBinder ?: return true
-        val service = binder.getService()
+        val sessionController = activity.sessionController ?: return true
 
-        val sessionId = generateUniqueSessionId(service.sessionList.keys.toList())
-        terminalView.get()?.let {
+        val sessionId = generateUniqueSessionId(sessionController.sessionList.keys.toList())
+        TerminalUiRegistry.terminalView.get()?.let {
             val client = TerminalBackEnd(it, activity)
-            binder.createSession(sessionId, client, activity)
+            sessionController.createSession(sessionId, client, activity)
         }
         changeSession(activity, session_id = sessionId)
         return true
     }
 
     private fun handleCloseSession(activity: MainActivity): Boolean {
-        val binder = activity.sessionBinder ?: return true
-        val service = binder.getService()
-        val currentId = service.currentSession.value
-        val sessionKeys = service.sessionList.keys.toList()
+        val sessionController = activity.sessionController ?: return true
+        val currentId = sessionController.currentSession.value
+        val sessionKeys = sessionController.sessionList.keys.toList()
 
         if (sessionKeys.size <= 1) {
-            binder.terminateSession(currentId)
-            if (service.sessionList.isEmpty()) {
+            sessionController.terminateSession(currentId)
+            if (sessionController.sessionList.isEmpty()) {
                 activity.finish()
             }
         } else {
@@ -77,19 +75,18 @@ object KeyShortcutHandler {
                 sessionKeys[currentIndex - 1]
             }
             changeSession(activity, session_id = nextId)
-            binder.terminateSession(currentId)
+            sessionController.terminateSession(currentId)
         }
         return true
     }
 
     private fun handleSwitchSession(activity: MainActivity, forward: Boolean): Boolean {
-        val binder = activity.sessionBinder ?: return true
-        val service = binder.getService()
-        val sessionKeys = service.sessionList.keys.toList()
+        val sessionController = activity.sessionController ?: return true
+        val sessionKeys = sessionController.sessionList.keys.toList()
 
         if (sessionKeys.size <= 1) return true
 
-        val currentId = service.currentSession.value
+        val currentId = sessionController.currentSession.value
         val currentIndex = sessionKeys.indexOf(currentId)
 
         val nextIndex = if (forward) {

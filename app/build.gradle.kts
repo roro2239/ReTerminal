@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.compose.compiler)
 }
 
 
@@ -45,7 +44,6 @@ android {
 
     buildFeatures {
         viewBinding = true
-        compose = true
     }
 
     packaging {

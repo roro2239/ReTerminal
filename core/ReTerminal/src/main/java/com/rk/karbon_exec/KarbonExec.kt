@@ -11,9 +11,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rk.libcommons.TerminalCommand
 import com.rk.libcommons.application
-import com.rk.libcommons.pendingCommand
 import com.rk.libcommons.toast
 import com.rk.resources.getString
+import com.rk.terminal.api.ReTerminal
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -116,12 +116,7 @@ fun runBashScript(
 }
 
 fun launchInternalTerminal(context: Context, terminalCommand: TerminalCommand) {
-    pendingCommand = terminalCommand
-    context.startActivity(
-        Intent(
-            context, Class.forName("com.rk.xededitor.ui.activities.terminal.Terminal")
-        )
-    )
+    ReTerminal.openFull(context, terminalCommand)
 }
 
 fun launchTermux(): Boolean {

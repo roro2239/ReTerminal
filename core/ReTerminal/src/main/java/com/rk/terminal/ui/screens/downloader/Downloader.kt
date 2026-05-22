@@ -27,7 +27,7 @@ import com.rk.libcommons.runOnUiThread
 import com.rk.libcommons.toast
 import com.rk.resources.strings
 import com.rk.terminal.ui.activities.terminal.MainActivity
-import com.rk.terminal.ui.screens.terminal.Rootfs
+import com.rk.terminal.runtime.RuntimeEnvironment
 import com.rk.terminal.ui.screens.terminal.TerminalScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -53,17 +53,17 @@ fun Downloader(
 
     LaunchedEffect(Unit) {
         try {
-            if (Rootfs.isFilesDownloaded()) {
-                Rootfs.isDownloaded.value = true
+            if (RuntimeEnvironment.isFilesDownloaded()) {
+                RuntimeEnvironment.isDownloaded.value = true
                 isSetupComplete = true
                 return@LaunchedEffect
             }
 
             val alpine = latestAlpineMiniRootfs()
             val files = listOf(
-                DownloadFile("alpine.tar.gz", alpine.url, Rootfs.reTerminal.child("alpine.tar.gz"), alpine.sha256),
-                DownloadFile("proot", PROOT_URL, Rootfs.reTerminal.child("proot"), null),
-                DownloadFile("libtalloc.so.2", TALLOC_URL, Rootfs.reTerminal.child("libtalloc.so.2"), null)
+                DownloadFile("alpine.tar.gz", alpine.url, RuntimeEnvironment.reTerminal.child("alpine.tar.gz"), alpine.sha256),
+                DownloadFile("proot", PROOT_URL, RuntimeEnvironment.reTerminal.child("proot"), null),
+                DownloadFile("libtalloc.so.2", TALLOC_URL, RuntimeEnvironment.reTerminal.child("libtalloc.so.2"), null)
             )
 
             needsDownload = true
@@ -76,7 +76,7 @@ fun Downloader(
                     }
                 },
                 onComplete = {
-                    Rootfs.markDownloaded(alpine.sha256)
+                    RuntimeEnvironment.markDownloaded(alpine.sha256)
                     isSetupComplete = true
                 },
                 onError = { error ->
@@ -115,8 +115,8 @@ private suspend fun setupEnvironment(
 ) {
     withContext(Dispatchers.IO) {
         try {
-            if (!Rootfs.isFilesDownloaded()) {
-                Rootfs.resetInstalledRootfs()
+            if (!RuntimeEnvironment.isFilesDownloaded()) {
+                RuntimeEnvironment.resetInstalledRootfs()
                 files.forEachIndexed { index, file ->
                     val outputFile = file.outputFile.apply { parentFile?.mkdirs() }
                     outputFile.delete()

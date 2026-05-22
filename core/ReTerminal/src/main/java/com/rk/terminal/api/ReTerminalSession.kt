@@ -2,7 +2,6 @@ package com.rk.terminal.api
 
 import android.util.Log
 import com.rk.libcommons.TerminalCommand
-import com.rk.libcommons.pendingCommand
 import com.rk.terminal.ui.screens.terminal.MkSession
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
@@ -85,8 +84,8 @@ internal object ReTerminalSessionFactory {
     ): ReTerminalSessionHandle {
         ReTerminal.requireRuntimeReady()
 
-        if (request.shell != null) {
-            pendingCommand = TerminalCommand(
+        val command = request.shell?.let {
+            TerminalCommand(
                 shell = request.shell,
                 args = request.args,
                 id = request.id,
@@ -107,7 +106,7 @@ internal object ReTerminalSessionFactory {
                 listener.onFinished(handle)
             },
         )
-        val session = MkSession.createSession(ReTerminal.requireApplication(), client, request.id)
+        val session = MkSession.createSession(ReTerminal.requireApplication(), client, request.id, command)
         handle = ReTerminalSessionHandle(request.id, session)
         session.updateSize(request.columns, request.rows, request.cellWidthPixels, request.cellHeightPixels)
         return handle

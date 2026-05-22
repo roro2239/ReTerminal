@@ -7,7 +7,7 @@ import com.rk.libcommons.createFileIfNot
 import com.rk.libcommons.localBinDir
 import com.rk.libcommons.localDir
 import com.rk.libcommons.localLibDir
-import com.rk.libcommons.pendingCommand
+import com.rk.libcommons.TerminalCommand
 import com.rk.settings.Settings
 import com.rk.terminal.App.Companion.getTempDir
 import com.rk.terminal.BuildConfig
@@ -19,7 +19,10 @@ import java.io.File
 
 object MkSession {
     fun createSession(
-        context: Context, sessionClient: TerminalSessionClient, session_id: String
+        context: Context,
+        sessionClient: TerminalSessionClient,
+        session_id: String,
+        command: TerminalCommand? = null,
     ): TerminalSession {
         ReTerminal.requireRuntimeReady()
         with(context) {
@@ -35,7 +38,7 @@ object MkSession {
                 "EXTERNAL_STORAGE" to System.getenv("EXTERNAL_STORAGE")
             )
 
-            val workingDir = pendingCommand?.workingDir ?: alpineHomeDir().path
+            val workingDir = command?.workingDir ?: alpineHomeDir().path
 
             val initFile: File = localBinDir().child("init-host")
             writeAssetScript("init-host.sh", initFile)
@@ -93,21 +96,20 @@ object MkSession {
                 }
             }
 
-            pendingCommand?.env?.let {
+            command?.env?.let {
                 env.addAll(it)
             }
 
             val args: Array<String>
 
-            val shell = if (pendingCommand == null) {
+            val shell = if (command == null) {
                 args = arrayOf("-c",initFile.absolutePath)
                 "/system/bin/sh"
             } else{
-                args = pendingCommand!!.args
-                pendingCommand!!.shell
+                args = command.args
+                command.shell
             }
 
-            pendingCommand = null
             return TerminalSession(
                 shell,
                 workingDir,

@@ -135,11 +135,12 @@ class TerminalBackEnd(val terminal: TerminalView,val activity: MainActivity) : T
             return true
         }
         if (keyCode == KeyEvent.KEYCODE_ENTER && !session.isRunning) {
-            activity.sessionBinder?.terminateSession(activity.sessionBinder!!.getService().currentSession.value)
-            if (activity.sessionBinder!!.getService().sessionList.isEmpty()){
+            val sessionController = activity.sessionController ?: return true
+            sessionController.terminateSession(sessionController.currentSession.value)
+            if (sessionController.sessionList.isEmpty()) {
                 activity.finish()
-            }else{
-                changeSession(activity,activity.sessionBinder!!.getService().sessionList.keys.first())
+            } else {
+                changeSession(activity, sessionController.sessionList.keys.first())
             }
             return true
         }
@@ -156,25 +157,25 @@ class TerminalBackEnd(val terminal: TerminalView,val activity: MainActivity) : T
     
     // keys
     override fun readControlKey(): Boolean {
-        val state = virtualKeysView.get()?.readSpecialButton(
+        val state = TerminalUiRegistry.virtualKeysView.get()?.readSpecialButton(
             SpecialButton.CTRL, true)
         return state != null && state
     }
     
     override fun readAltKey(): Boolean {
-       val state = virtualKeysView.get()?.readSpecialButton(
+       val state = TerminalUiRegistry.virtualKeysView.get()?.readSpecialButton(
            SpecialButton.ALT, true)
         return state != null && state
     }
     
     override fun readShiftKey(): Boolean {
-        val state = virtualKeysView.get()?.readSpecialButton(
+        val state = TerminalUiRegistry.virtualKeysView.get()?.readSpecialButton(
             SpecialButton.SHIFT, true)
         return state != null && state
     }
     
     override fun readFnKey(): Boolean {
-        val state = virtualKeysView.get()?.readSpecialButton(
+        val state = TerminalUiRegistry.virtualKeysView.get()?.readSpecialButton(
             SpecialButton.FN, true)
         return state != null && state
     }

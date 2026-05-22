@@ -4,11 +4,12 @@ import android.app.Application
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import com.rk.libcommons.TerminalCommand
 import com.rk.libcommons.application
 import com.rk.resources.Res
 import com.rk.libcommons.alpineHomeDir
+import com.rk.terminal.runtime.RuntimeEnvironment
 import com.rk.terminal.ui.activities.terminal.MainActivity
-import com.rk.terminal.ui.screens.terminal.Rootfs
 
 data class ReTerminalConfig(
     val installRuntimeOnEntryOpen: Boolean = true,
@@ -16,25 +17,31 @@ data class ReTerminalConfig(
 )
 
 object ReTerminal {
+    private const val EXTRA_COMMAND_ID = "com.rk.terminal.extra.COMMAND_ID"
+    private const val EXTRA_COMMAND_SHELL = "com.rk.terminal.extra.COMMAND_SHELL"
+    private const val EXTRA_COMMAND_ARGS = "com.rk.terminal.extra.COMMAND_ARGS"
+    private const val EXTRA_COMMAND_WORKING_DIR = "com.rk.terminal.extra.COMMAND_WORKING_DIR"
+    private const val EXTRA_COMMAND_ENV = "com.rk.terminal.extra.COMMAND_ENV"
+
     private var config = ReTerminalConfig()
 
     val isInitialized: Boolean
         get() = application != null
 
     val isRuntimeReady: Boolean
-        get() = isInitialized && Rootfs.isFilesDownloaded()
+        get() = isInitialized && RuntimeEnvironment.isFilesDownloaded()
 
     fun init(application: Application, config: ReTerminalConfig = ReTerminalConfig()) {
         if (isInitialized) {
             this.config = config
-            Rootfs.refreshState()
+            RuntimeEnvironment.refreshState()
             return
         }
 
         com.rk.libcommons.application = application
         Res.application = application
         this.config = config
-        Rootfs.refreshState()
+        RuntimeEnvironment.refreshState()
     }
 
     fun requireApplication(): Application {
@@ -43,22 +50,46 @@ object ReTerminal {
 
     fun requireRuntimeReady() {
         requireApplication()
-        if (!Rootfs.isFilesDownloaded()) {
+        if (!RuntimeEnvironment.isFilesDownloaded()) {
             throw IllegalStateException("ReTerminal 运行环境未初始化")
         }
     }
 
-    fun createFullIntent(context: Context): Intent {
+    fun createFullIntent(context: Context, command: TerminalCommand? = null): Intent {
         initIfPossible(context)
         return Intent(context, MainActivity::class.java).apply {
             if (context !is Activity) {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            command?.let {
+                putExtra(EXTRA_COMMAND_ID, it.id)
+                putExtra(EXTRA_COMMAND_SHELL, it.shell)
+                putExtra(EXTRA_COMMAND_ARGS, it.args)
+                putExtra(EXTRA_COMMAND_WORKING_DIR, it.workingDir)
+                putExtra(EXTRA_COMMAND_ENV, it.env)
             }
         }
     }
 
     fun openFull(context: Context) {
         context.startActivity(createFullIntent(context))
+    }
+
+    fun openFull(context: Context, command: TerminalCommand) {
+        context.startActivity(createFullIntent(context, command))
+    }
+
+    internal fun readCommand(intent: Intent): TerminalCommand? {
+        val id = intent.getStringExtra(EXTRA_COMMAND_ID) ?: return null
+        val shell = intent.getStringExtra(EXTRA_COMMAND_SHELL) ?: return null
+        val workingDir = intent.getStringExtra(EXTRA_COMMAND_WORKING_DIR) ?: defaultWorkingDir()
+        return TerminalCommand(
+            shell = shell,
+            args = intent.getStringArrayExtra(EXTRA_COMMAND_ARGS) ?: emptyArray(),
+            id = id,
+            workingDir = workingDir,
+            env = intent.getStringArrayExtra(EXTRA_COMMAND_ENV) ?: emptyArray(),
+        )
     }
 
     fun createSession(

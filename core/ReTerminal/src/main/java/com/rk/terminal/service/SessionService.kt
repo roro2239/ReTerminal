@@ -8,63 +8,43 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import com.rk.resources.drawables
-import com.rk.resources.strings
 import com.rk.terminal.api.ReTerminal
+import com.rk.terminal.session.TerminalSessionController
 import com.rk.terminal.ui.activities.terminal.MainActivity
-import com.rk.terminal.ui.screens.settings.Settings
-import com.rk.terminal.ui.screens.terminal.MkSession
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 
 class SessionService : Service() {
-    private val sessions = hashMapOf<String, TerminalSession>()
-    val sessionList = mutableStateMapOf<String, Boolean>()
-    var currentSession = mutableStateOf("main")
+    val controller = TerminalSessionController(::handleSessionsChanged)
 
-    inner class SessionBinder : Binder() {
-        fun getService():SessionService{
-            return this@SessionService
-        }
-        fun terminateAllSessions(){
-            sessions.values.forEach{
-                it.finishIfRunning()
-            }
-            sessions.clear()
-            sessionList.clear()
+    private fun handleSessionsChanged() {
+        if (controller.isEmpty()) {
+            stopSelf()
+        } else {
             updateNotification()
         }
+    }
+
+    inner class SessionBinder : Binder() {
+        val sessionController: TerminalSessionController
+            get() = controller
+
+        fun terminateAllSessions() {
+            controller.terminateAllSessions()
+        }
+
         fun createSession(id: String, client: TerminalSessionClient, context: Context): TerminalSession {
-            return MkSession.createSession(context, client, id).also {
-                sessions[id] = it
-                sessionList[id] = true
-                updateNotification()
-            }
+            return controller.createSession(id, client, context)
         }
+
         fun getSession(id: String): TerminalSession? {
-            return sessions[id]
+            return controller.getSession(id)
         }
+
         fun terminateSession(id: String) {
-            runCatching {
-                //crash is here
-                sessions[id]?.apply {
-                    if (emulator != null){
-                        sessions[id]?.finishIfRunning()
-                    }
-                }
-
-                sessions.remove(id)
-                sessionList.remove(id)
-                if (sessions.isEmpty()) {
-                    stopSelf()
-                } else {
-                    updateNotification()
-                }
-            }.onFailure { it.printStackTrace() }
-
+            controller.terminateSession(id)
         }
     }
 
@@ -78,7 +58,7 @@ class SessionService : Service() {
     }
 
     override fun onDestroy() {
-        sessions.forEach { s -> s.value.finishIfRunning() }
+        controller.destroy()
         super.onDestroy()
     }
 
@@ -101,7 +81,7 @@ class SessionService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             "ACTION_EXIT" -> {
-                sessions.forEach { s -> s.value.finishIfRunning() }
+                controller.destroy()
                 stopSelf()
             }
         }
@@ -156,7 +136,7 @@ class SessionService : Service() {
     }
 
     private fun getNotificationContentText(): String {
-        val count = sessions.size
+        val count = controller.sessionList.size
         if (count == 1){
             return "1 session running"
         }
